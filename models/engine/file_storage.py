@@ -2,6 +2,20 @@
 """This module defines a class to manage file storage for hbnb clone"""
 from datetime import datetime
 import json
+import models
+from models.base_model import BaseModel
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
+
+classes = {
+    'BaseModel': BaseModel, 'User': User, 'Place': Place,
+    'State': State, 'City': City, 'Amenity': Amenity,
+    'Review': Review
+}
 
 
 class FileStorage:
@@ -35,19 +49,6 @@ class FileStorage:
 
     def reload(self):
         """Loads storage dictionary from file"""
-        from models.base_model import BaseModel
-        from models.user import User
-        from models.place import Place
-        from models.state import State
-        from models.city import City
-        from models.amenity import Amenity
-        from models.review import Review
-
-        classes = {
-                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
-                    'State': State, 'City': City, 'Amenity': Amenity,
-                    'Review': Review
-                  }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
@@ -60,10 +61,36 @@ class FileStorage:
     def delete(self, obj=None):
         """delete an object"""
         if obj is not None:
-            key = obj.__class__.__name__+'.'+obj.id
+            key = obj.__class__.__name__ + '.' + obj.id
             if key in self.__objects:
                 del self.__objects[key]
 
     def close(self):
         """ a method close"""
         self.reload()
+
+    def get(self, cls, id):
+        """ a function to retrieve one object """
+        if cls not in classes.values():
+            return None
+
+        all_classes = models.storage.all(cls)
+        for value in all_classes.values():
+            if (value.id == id):
+                return value
+
+        return None
+
+    def count(self, cls=None):
+        """count the number of objects in storage"""
+        count = 0
+        if cls:
+            all_classes = models.storage.all(cls).values()
+            for obj in all_classes:
+                count += 1
+            return count
+        else:
+            all_classes = models.storage.all().values()
+            for obj in all_classes:
+                count += 1
+            return count
