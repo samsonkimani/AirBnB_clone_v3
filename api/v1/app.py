@@ -1,17 +1,25 @@
 #!/usr/bin/python3
 """ model - flask app """
 from os import environ
-from flask import Flask
+from flask import Flask, make_response, jsonify
 from models import storage
 from api.v1.views import app_views
 
 app = Flask(__name__)
 app.register_blueprint(app_views)
 
+
 @app.teardown_appcontext
 def close_db(error):
     """teardown app"""
     storage.close()
+
+
+@app.errorhandler(404)
+def not_found(error):
+    """ handling 404 error"""
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
 
 if __name__ == '__main__':
     """main function """
